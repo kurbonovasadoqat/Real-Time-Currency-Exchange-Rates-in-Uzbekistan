@@ -6,3 +6,4 @@ __pycache__/
 .idea/
 .vscode/
 .cache/
+.DS_Store
