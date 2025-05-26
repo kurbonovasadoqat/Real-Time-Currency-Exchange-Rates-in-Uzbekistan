@@ -56,15 +56,15 @@ async def main():
     )
     logger.info(f"📅 CBU xabarlari har kuni {hour:02d}:{minute:02d} da yuboriladi.")
 
-    # ✅ TEST rejim: har 1 daqiqada yuboriladi
-    scheduler.add_job(
-        send_daily_cbu_notifications,
-        trigger="interval",
-        minutes=1,
-        args=[bot],
-        id="test_cbu_every_minute"
-    )
-    logger.info("🧪 [TEST] Har 1 daqiqada CBU xabari yuborilishi yo‘lga qo‘yildi.")
+    # # ✅ TEST rejim: har 1 daqiqada yuboriladi
+    # scheduler.add_job(
+    #     send_daily_cbu_notifications,
+    #     trigger="interval",
+    #     minutes=1,
+    #     args=[bot],
+    #     id="test_cbu_every_minute"
+    # )
+    # logger.info("🧪 [TEST] Har 1 daqiqada CBU xabari yuborilishi yo‘lga qo‘yildi.")
 
     scheduler.start()
 
