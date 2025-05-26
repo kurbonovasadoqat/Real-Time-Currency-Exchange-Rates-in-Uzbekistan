@@ -1,11 +1,5 @@
-# currency_bot/config.py
-
 import os
 from decimal import Decimal
-from dotenv import load_dotenv
-
-load_dotenv()
-LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
 
 def _get_env(name: str, default=None, required=False):
     val = os.getenv(name, default)
