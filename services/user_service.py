@@ -3,6 +3,8 @@
 import logging
 from typing import Optional, AsyncIterator
 from pymongo.errors import PyMongoError
+from database.mongodb import users_collection
+
 
 from database.mongodb import get_collection
 
@@ -19,6 +21,14 @@ async def save_user_language(user_id: int, lang: str) -> None:
         )
     except PyMongoError:
         logging.exception("❌ Tilni saqlashda xatolik (user_id: %s)", user_id)
+
+
+async def remove_user(user_id: int) -> None:
+    """
+    Bazadan foydalanuvchini o'chirib tashlaydi.
+    """
+    await users_collection.delete_one({"user_id": user_id})
+
 
 
 # 🌐 Tilni olish

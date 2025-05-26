@@ -31,3 +31,7 @@ def get_db() -> AsyncIOMotorDatabase:
 
 def get_collection(name: str):
     return get_db()[name]
+
+client = AsyncIOMotorClient(MONGO_URI)
+db = client["currency_db"]
+users_collection = db["users"] 
