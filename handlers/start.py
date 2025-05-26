@@ -19,9 +19,17 @@ LANG_OPTIONS = {
 
 @router.message(F.text == "/start")
 async def cmd_start(message: Message):
-    # Boshlang‘ich salomlashuv — doim inglizcha yoki til tanlovdan oldin
-    text = texts["start_welcome"].get("en", "Welcome!")
-    await message.answer(text, reply_markup=language_keyboard())
+    user_id = message.from_user.id
+    lang = await get_user_language(user_id)
+
+    if lang in ("uz", "ru", "en"):
+        # ✅ Til allaqachon tanlangan → to‘g‘ridan-to‘g‘ri menyu
+        menu_text = texts["menu_select_service"].get(lang, texts["menu_select_service"]["en"])
+        await message.answer(menu_text, reply_markup=main_menu_keyboard(lang))
+    else:
+        # 🆕 Yangi foydalanuvchi → til tanlash
+        welcome = texts["start_welcome"].get("en", "👋 Welcome! Please select your language:")
+        await message.answer(welcome, reply_markup=language_keyboard())
 
 
 @router.message(F.text.in_(LANG_OPTIONS.keys()))

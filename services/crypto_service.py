@@ -1,31 +1,21 @@
+# ✅ CACHED CRYPTO SERVICE
 # currency_bot/services/crypto_service.py
 
-import aiohttp
-import json
+from aiohttp import ClientSession
+from aiocache import cached, Cache
 
-CRYPTO_SYMBOLS = ["BTCUSDT", "ETHUSDT", "BNBUSDT", "XRPUSDT", "DOGEUSDT"]
-
+@cached(ttl=300, cache=Cache.MEMORY)
 async def get_crypto_prices():
-    url = "https://api.binance.com/api/v3/ticker/price"
+    url = "https://api.binance.com/api/v3/ticker/price?symbols=[\"BTCUSDT\",\"ETHUSDT\"]"
     try:
-        async with aiohttp.ClientSession() as session:
+        async with ClientSession() as session:
             async with session.get(url) as response:
                 data = await response.json()
 
-        btc_price = None
-        eth_price = None
+        btc = next(item["price"] for item in data if item["symbol"] == "BTCUSDT")
+        eth = next(item["price"] for item in data if item["symbol"] == "ETHUSDT")
 
-        for item in data:
-            if item["symbol"] == "BTCUSDT":
-                btc_price = float(item["price"])
-            elif item["symbol"] == "ETHUSDT":
-                eth_price = float(item["price"])
+        return float(btc), float(eth)
 
-        if btc_price is None or eth_price is None:
-            raise ValueError("Kripto narxlar topilmadi")
-
-        return btc_price, eth_price
-
-    except Exception as e:
-        print("❌ Kripto narxlar olishda xatolik:", e)
+    except Exception:
         return None, None

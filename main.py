@@ -8,6 +8,12 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from config import BOT_TOKEN, LOG_LEVEL, DAILY_NOTIFICATION_TIME
 from logger import setup_logger
+
+# ✅ Logger sozlash
+setup_logger(LOG_LEVEL)
+logger = logging.getLogger("currency_bot.main")
+
+# 🔽 Router va boshqa importlar (logger'dan keyin bo‘lishi mumkin)
 from handlers import (
     start,
     convert,
@@ -18,54 +24,60 @@ from handlers import (
 from tasks.notifications import send_daily_cbu_notifications
 from services.blackmarket_service import close_session as close_blackmarket_session
 
-# 0. Logger sozlash — dastlab bir marta chaqiriladi
-setup_logger(LOG_LEVEL)
 
 async def main():
-    # 1. TEST SIGNAL
-    print("🟢 [main.py] Bot ishga tushmoqda...")
+    logger.info("🚀 Bot initialize qilinmoqda...")
 
-    logging.info("🚀 Bot initialize qilinmoqda...")
-
-    # 2. Bot va Dispatcher
+    # 1. Bot va Dispatcher
     bot = Bot(token=BOT_TOKEN, parse_mode="HTML")
     dp = Dispatcher(storage=MemoryStorage())
+    logger.info("🤖 Bot va Dispatcher tayyor")
 
-    # 3. Routerlar
+    # 2. Routerlarni ulash
     dp.include_router(start.router)
     dp.include_router(convert.router)
     dp.include_router(market.router)
     dp.include_router(help_menu.router)
     dp.include_router(settings.router)
+    logger.info("🔗 Barcha routerlar ulandi")
 
-    # 4. Scheduler — CBU kurslarini yuborish (kuniga 1 marta)
-    try:
-        hour, minute = map(int, DAILY_NOTIFICATION_TIME.split(":"))
-        scheduler = AsyncIOScheduler(timezone="Asia/Tashkent")
-        scheduler.add_job(
-            send_daily_cbu_notifications,
-            trigger="cron",
-            hour=hour,
-            minute=minute,
-            args=[bot],
-            id="daily_cbu_notifications"
-        )
-        scheduler.start()
-        logging.info(f"⏰ Kunlik CBU xabarlari: {hour:02d}:{minute:02d} da yuboriladi")
-    except Exception as e:
-        logging.warning(f"⚠️ Scheduler ishga tushmadi: {e}")
+    # 3. Scheduler — CBU xabarlari
+    hour, minute = map(int, DAILY_NOTIFICATION_TIME.split(":"))
+    scheduler = AsyncIOScheduler(timezone="Asia/Tashkent")
 
-    # 5. Polling
-    logging.info("🤖 Bot ishga tushdi. Polling boshlanmoqda...")
+    # ✅ Har kuni 09:00 da yuboriladigan CBU xabari
+    scheduler.add_job(
+        send_daily_cbu_notifications,
+        trigger="cron",
+        hour=hour,
+        minute=minute,
+        args=[bot],
+        id="daily_cbu_notifications"
+    )
+    logger.info(f"📅 CBU xabarlari har kuni {hour:02d}:{minute:02d} da yuboriladi.")
+
+    # ✅ TEST rejim: har 1 daqiqada yuboriladi
+    scheduler.add_job(
+        send_daily_cbu_notifications,
+        trigger="interval",
+        minutes=1,
+        args=[bot],
+        id="test_cbu_every_minute"
+    )
+    logger.info("🧪 [TEST] Har 1 daqiqada CBU xabari yuborilishi yo‘lga qo‘yildi.")
+
+    scheduler.start()
+
+    # 4. Polling boshlash
+    logger.info("✅ Bot tayyor. Polling boshlanmoqda...")
     try:
         await dp.start_polling(bot)
     finally:
-        # 6. Tozalash
-        logging.info("🛑 Bot to‘xtatilyapti...")
+        logger.info("🛑 Bot to‘xtatilyapti, tozalash ishlari...")
         scheduler.shutdown()
         await bot.session.close()
         await close_blackmarket_session()
-        logging.info("✅ Tozalash tugadi. Bot yopildi.")
+        logger.info("✅ Bot to‘xtatildi. Barcha resurslar tozalandi.")
 
 
 if __name__ == "__main__":

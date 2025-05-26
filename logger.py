@@ -1,16 +1,23 @@
-import logging
-from typing import Union
+# currency_bot/logger.py
 
-def setup_logger(level: Union[str, int] = logging.INFO):
+import logging
+import sys
+
+def setup_logger(level: str = "INFO") -> None:
     """
-    Konsolga log yozishni sozlaydi.
+    Logger konfiguratsiyasi — barcha modullarda yagona log formatini ta’minlaydi.
     
-    :param level: log darajasi — 'DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL' yoki int
+    :param level: 'DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'
     """
     logging.basicConfig(
-        level=level,
-        format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S"
+        level=level.upper(),
+        format="🟢 [%(name)s] %(levelname)s: %(message)s",
+        handlers=[
+            logging.StreamHandler(sys.stdout)  # loglarni terminalga chiqarish
+        ]
     )
-    logging.getLogger("apscheduler").setLevel(logging.WARNING)  # Jadval loglarini kamaytirish
-    logging.getLogger("aiogram.event").setLevel(logging.WARNING)  # Aiogram hodisa loglarini kamaytirish
+
+    # Boshqa kutubxonalar logini kamaytirish
+    logging.getLogger("aiogram").setLevel(level.upper())
+    logging.getLogger("apscheduler").setLevel("WARNING")
+    logging.getLogger("aiohttp.access").setLevel("WARNING")
