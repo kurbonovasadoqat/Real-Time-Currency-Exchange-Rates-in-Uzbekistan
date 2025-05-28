@@ -1,5 +1,7 @@
 import os
 from decimal import Decimal
+# from dotenv import load_dotenv
+# load_dotenv()
 
 # 🔍 DEBUG: ENV o'qilayaptimi tekshiradi (Logs'da ko'rinadi)
 print("🔥 DEBUG - ENV OPENAI_API_KEY:", os.getenv("OPENAI_API_KEY"))
